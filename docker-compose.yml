@@ -1,4 +1,5 @@
 services:
+
   ci3:
     build: .
     container_name: property-management-system
@@ -6,6 +7,35 @@ services:
       - "8080:80"
     volumes:
       - .:/var/www/html
-    extra_hosts:
-      - "host.docker.internal:host-gateway"  
+    depends_on:
+      - db
     restart: unless-stopped
+
+  db:
+    image: mariadb:10.11
+    container_name: property-management-db
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: property_management
+      MARIADB_USER: property_user
+      MARIADB_PASSWORD: Property@12345
+    ports:
+      - "3307:3306"
+    volumes:
+      - property_db_data:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: property-management-phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+    depends_on:
+      - db
+
+volumes:
+  property_db_data:
